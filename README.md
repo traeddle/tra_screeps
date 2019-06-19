@@ -56,3 +56,9 @@ To visit the docs, [click here](https://screepers.gitbooks.io/screeps-typescript
 ## Contributing
 
 Issues, Pull Requests, and contribution to the docs are welcome! See our [Contributing Guidelines](CONTRIBUTING.md) for more details.
+
+
+
+## Deploy
+npm run push-main
+npm run push-sim
