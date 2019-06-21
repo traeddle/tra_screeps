@@ -1,11 +1,13 @@
-import { CreepHelper } from "helpers/CreepHelper";
-import { CreepRoles } from "helpers/constants";
+import * as Enums from "helpers/Enums";
+import { CreepHelper, CreepBodyDescriptor } from "helpers/CreepHelper";
+
+
 
 export class SpawnHelper {
     public static Run() {
 
-        var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == CreepRoles.HARVESTER);
-        var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == CreepRoles.UPGRADER);
+        var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == Enums.CreepRoles.Harvester);
+        var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == Enums.CreepRoles.Upgrader);
 
 
         for (const name in Game.spawns) {
@@ -21,8 +23,56 @@ export class SpawnHelper {
         }
     }
 
+    public static CreateBiggestCreepBody(baseBody: CreepBodyDescriptor, spawn: StructureSpawn): BodyPartConstant[] {
+        let currentEnergy = spawn.energy;
+        let energyCapacity = spawn.energyCapacity;
+        if (energyCapacity / 2 > currentEnergy)
+            return [];
+
+        let currentCost = SpawnHelper.GetBodyCost(baseBody);
+        if (currentCost > currentEnergy)
+            return [];
+
+        let multiplier = currentEnergy / currentEnergy;
+
+        var rtVal: BodyPartConstant[] = [];
+
+        rtVal = rtVal.concat(SpawnHelper.GetParts(baseBody.work, multiplier, WORK));
+        rtVal = rtVal.concat(SpawnHelper.GetParts(baseBody.carry, multiplier, CARRY));
+        rtVal = rtVal.concat(SpawnHelper.GetParts(baseBody.move, multiplier, MOVE));
+        rtVal = rtVal.concat(SpawnHelper.GetParts(baseBody.attack, multiplier, ATTACK));
+        rtVal = rtVal.concat(SpawnHelper.GetParts(baseBody.ranged_attack, multiplier, RANGED_ATTACK));
+        rtVal = rtVal.concat(SpawnHelper.GetParts(baseBody.heal, multiplier, HEAL));
+        rtVal = rtVal.concat(SpawnHelper.GetParts(baseBody.claim, multiplier, CLAIM));
+        rtVal = rtVal.concat(SpawnHelper.GetParts(baseBody.tough, multiplier, TOUGH));
+        return rtVal;
+    }
+
+    public static GetParts(baseNum: number, multiplier: number, bodyPart: BodyPartConstant): BodyPartConstant[]{
+        if (baseNum > 0) {
+            let rtVal: BodyPartConstant[] = new Array(baseNum * multiplier);
+            for (var i = 0; i < baseNum * multiplier; ++i) {
+                rtVal[i] = bodyPart;
+            }
+            return rtVal;
+        }
+        return [];
+    }
+
+    public static GetBodyCost(body: CreepBodyDescriptor): number {
+        return body.attack * body.AttackCost
+            + body.carry * body.CarryCost
+            + body.claim * body.ClaimCost
+            + body.heal * body.HealCost
+            + body.move * body.MoveCost
+            + body.ranged_attack * body.RangedAttackCost
+            + body.tough * body.Tough
+            + body.work * body.WorkCost
+    }
+
     public static Spawn(spawn: StructureSpawn, body: BodyPartConstant[], opts: SpawnOptions) {
         var name = opts.memory!.role + "_" + Game.time.toString();
+        if (body.length < 1) return;
         var spawnReturnValue = spawn.spawnCreep(body, name, opts);
         if (spawnReturnValue != OK) {
 

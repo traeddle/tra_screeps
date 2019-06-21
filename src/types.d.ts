@@ -1,11 +1,12 @@
 // example declaration file - remove these and add your own custom typings
+import * as Enums from "helpers/Enums";
+//declare const ROOM_STATE_INTRO = 0;
+    
 
-// memory extension samples
-interface CreepMemory {
-  role: string;
-  room: string;
-  working: boolean;
-}
+
+    
+
+
 
 interface Memory {
   uuid: number;
@@ -18,3 +19,4 @@ declare namespace NodeJS {
     log: any;
   }
 }
+
