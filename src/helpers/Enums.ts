@@ -2,14 +2,16 @@
 
 export enum CreepRoles {
     Harvester = "harvester",
-    Upgrader = "upgrader"
+    Upgrader = "upgrader",
+    Worker = "Worker"
 }
 
 export enum JobStatus {
     Unknown = "unknown",
     HarvestingEnergy = "harvesting energy",
     TransferingEnergy = "transfering energy",
-    Upgrading = "upgrading"
+    Upgrading = "upgrading",
+    Building = "building"
 }
 
 
@@ -18,7 +20,6 @@ declare global {
     interface CreepMemory {
         role: CreepRoles;
         room: string;
-        working: boolean;
         status: JobStatus;
     }
 }

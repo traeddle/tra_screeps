@@ -1,5 +1,6 @@
 import * as Enums from "helpers/Enums";
-import { CreepHelper, CreepBodyDescriptor } from "helpers/CreepHelper";
+import { CreepHelper } from "helpers/CreepHelper";
+import { CreepBodyDescriptor } from "helpers/constants";
 
 
 
@@ -8,6 +9,7 @@ export class SpawnHelper {
 
         var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == Enums.CreepRoles.Harvester);
         var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == Enums.CreepRoles.Upgrader);
+        var workers = _.filter(Game.creeps, (creep) => creep.memory.role == Enums.CreepRoles.Worker);
 
 
         for (const name in Game.spawns) {
@@ -16,11 +18,30 @@ export class SpawnHelper {
             if (spawn.spawning == null) {
 
                 if (harvesters.length < 5)
-                    CreepHelper.SpawnHarvester(spawn);
+                    SpawnHelper.SpawnHarvester(spawn);
                 else if (upgraders.length < 2)
-                    CreepHelper.SpawnUpgrader(spawn);
+                    SpawnHelper.SpawnUpgrader(spawn);
+                else if (workers.length < 2)
+                    SpawnHelper.SpawnWorker(spawn);
             }
         }
+    }
+
+
+    static SpawnUpgrader(spawn: StructureSpawn) {
+        let creepBody: CreepBodyDescriptor = CreepBodyDescriptor.Get_Upgrader_Body();
+
+        SpawnHelper.Spawn(spawn, SpawnHelper.CreateBiggestCreepBody(creepBody, spawn), CreepHelper.generateCreepSpawnOptions(Enums.CreepRoles.Upgrader, spawn.room))
+    }
+    static SpawnHarvester(spawn: StructureSpawn) {
+        let creepBody: CreepBodyDescriptor = CreepBodyDescriptor.Get_Harvester_Body();
+
+        SpawnHelper.Spawn(spawn, SpawnHelper.CreateBiggestCreepBody(creepBody, spawn), CreepHelper.generateCreepSpawnOptions(Enums.CreepRoles.Harvester, spawn.room))
+    }
+    static SpawnWorker(spawn: StructureSpawn) {
+        let creepBody: CreepBodyDescriptor = CreepBodyDescriptor.Get_Worker_Body();
+
+        SpawnHelper.Spawn(spawn, SpawnHelper.CreateBiggestCreepBody(creepBody, spawn), CreepHelper.generateCreepSpawnOptions(Enums.CreepRoles.Worker, spawn.room))
     }
 
     public static CreateBiggestCreepBody(baseBody: CreepBodyDescriptor, spawn: StructureSpawn): BodyPartConstant[] {

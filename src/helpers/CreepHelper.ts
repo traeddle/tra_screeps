@@ -1,46 +1,38 @@
 import * as Enums from "helpers/Enums";
-import { SpawnHelper } from "helpers/SpawnHelper";
+import { CreepBodyDescriptor } from "helpers/constants";
 
 export class CreepHelper {
-    static SpawnUpgrader(spawn: StructureSpawn) {
-        let creepBody: CreepBodyDescriptor = new CreepBodyDescriptor()
-        creepBody.work = 1;
-        creepBody.carry = 1;
-        creepBody.move = 1;
-        
-        SpawnHelper.Spawn(spawn, SpawnHelper.CreateBiggestCreepBody(creepBody, spawn), CreepHelper.generateCreepSpawnOptions(Enums.CreepRoles.Upgrader, spawn.room))
-    }
-    static SpawnHarvester(spawn: StructureSpawn) {
-        let creepBody: CreepBodyDescriptor = new CreepBodyDescriptor()
-        creepBody.work = 1;
-        creepBody.carry = 1;
-        creepBody.move = 1;   
-        SpawnHelper.Spawn(spawn, SpawnHelper.CreateBiggestCreepBody(creepBody, spawn), CreepHelper.generateCreepSpawnOptions(Enums.CreepRoles.Harvester, spawn.room))
-    }
 
-    public static generateCreepSpawnOptions(role: Enums.CreepRoles, room: Room): SpawnOptions {
+    static generateCreepSpawnOptions(role: Enums.CreepRoles, room: Room): SpawnOptions {
         return {
-            memory: CreepHelper.generateCreepMemory(role, room)
+            memory: CreepHelper.generateCreepMemory(role, room),
         }
     }
 
-    public static generateCreepMemory(role: Enums.CreepRoles, room: Room): CreepMemory {
+    static generateCreepMemory(role: Enums.CreepRoles, room: Room): CreepMemory {
     
         return {
             role: role,
             room: room.name,
-            working: true,
             status: Enums.JobStatus.Unknown
         };
     }
 
-    public static Run() {
+    static Run() {
 
         for (const name in Game.creeps) {
             const creep = Game.creeps[name];
 
+            //todo: need to rework this, they all have roles which should define their order of responsibility, but they can all do everything
+            //harvester and worker also need to repair structures
+            
+
             switch (creep.memory.role) {
                 case Enums.CreepRoles.Harvester:
+                //harvest
+                //deposit
+                //if nowhere to deposit look for something to build
+                //if nothing to build then upgrade
                     if (creep.memory.status != Enums.JobStatus.TransferingEnergy) {
                         CreepHelper.Harvest(creep, Enums.JobStatus.TransferingEnergy);
                     }
@@ -49,6 +41,7 @@ export class CreepHelper {
                     }
                     break;
                 case Enums.CreepRoles.Upgrader:
+                //upgrade is the dumb one that only ever upgrades
                     if (creep.memory.status != Enums.JobStatus.Upgrading) {
                         CreepHelper.Harvest(creep, Enums.JobStatus.Upgrading);
                     }
@@ -56,14 +49,32 @@ export class CreepHelper {
                         CreepHelper.Upgrade(creep);
                     }
                     break;
+                case Enums.CreepRoles.Worker:
+                //worker is similar to havester but will check for stuff to build before deposit
+                    if (creep.memory.status != Enums.JobStatus.Building) {
+                        CreepHelper.Harvest(creep, Enums.JobStatus.Building);
+                    }
+                    else {
+                        CreepHelper.Build(creep);
+                    }
+                    break;
             }
         }
     }
 
     static Transfer(creep: Creep) {
-        if (creep.transfer(Game.spawns['Spawn1'], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(Game.spawns['Spawn1']);
+        var targets = creep.room.find(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
+                    structure.energy < structure.energyCapacity;
+            }
+        });
+        if (targets.length > 0) {
+            if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(targets[0], { visualizePathStyle: { stroke: '#ffffff' } });
+            }
         }
+
         if (creep.carry.energy != 0) {
             creep.memory.status = Enums.JobStatus.TransferingEnergy;
         } else {
@@ -72,6 +83,8 @@ export class CreepHelper {
     }
 
     static Harvest(creep: Creep, nextTask: Enums.JobStatus) {
+    //todo: should also look for dead creeps in vacinity and pull resources from them
+
         var sources = creep.room.find(FIND_SOURCES);
         if (creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
             creep.moveTo(sources[0]);
@@ -95,25 +108,20 @@ export class CreepHelper {
             creep.memory.status = Enums.JobStatus.Unknown;
         }
     }
+
+    static Build(creep: Creep) {
+        var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+        if (targets.length) {
+            if (creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(targets[0], { visualizePathStyle: { stroke: '#ffffff' } });
+            }
+        }
+
+        if (creep.carry.energy != 0) {
+            creep.memory.status = Enums.JobStatus.Building;
+        } else {
+            creep.memory.status = Enums.JobStatus.Unknown;
+        }
+    }
 }
 
-//used to store and create creep
-export class CreepBodyDescriptor {
-    move: number = 0;
-    work: number = 0;
-    carry: number = 0;
-    tough: number = 0;
-    attack: number = 0;
-    ranged_attack: number = 0;
-    heal: number = 0;
-    claim: number = 0;
-
-    readonly MoveCost:number = 50;
-    readonly WorkCost: number =  100;
-    readonly CarryCost: number =  50;
-    readonly AttackCost: number =  80;
-    readonly RangedAttackCost: number =  150;
-    readonly HealCost: number =  250;
-    readonly ClaimCost: number =  600;
-    readonly Tough: number =  10;
-}
