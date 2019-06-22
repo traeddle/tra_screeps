@@ -1,32 +1,30 @@
-import * as Enums from "helpers/Enums";
+import * as Enums from "core/Enums";
 import { CreepHelper } from "helpers/CreepHelper";
-import { CreepBodyDescriptor } from "helpers/constants";
+import { CreepBodyDescriptor } from "core/Contracts";
 
 
 
 export class SpawnHelper {
     public static Run() {
-
-        var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == Enums.CreepRoles.Harvester);
-        var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == Enums.CreepRoles.Upgrader);
-        var workers = _.filter(Game.creeps, (creep) => creep.memory.role == Enums.CreepRoles.Worker);
-
+    
+        var drones = _.filter(Game.creeps, (creep) => creep.memory.role == Enums.CreepRoles.Drone);
 
         for (const name in Game.spawns) {
             const spawn = Game.spawns[name];
 
             if (spawn.spawning == null) {
 
-                if (harvesters.length < 5)
-                    SpawnHelper.SpawnHarvester(spawn);
-                else if (upgraders.length < 2)
-                    SpawnHelper.SpawnUpgrader(spawn);
-                else if (workers.length < 2)
-                    SpawnHelper.SpawnWorker(spawn);
+                if (drones.length < 10)
+                    SpawnHelper.SpawnDrone(spawn);
             }
         }
     }
 
+    static SpawnDrone(spawn: StructureSpawn) {
+        let creepBody: CreepBodyDescriptor = CreepBodyDescriptor.Get_Drone_Body();
+
+        SpawnHelper.Spawn(spawn, SpawnHelper.CreateBiggestCreepBody(creepBody, spawn), CreepHelper.generateCreepSpawnOptions(Enums.CreepRoles.Drone, spawn.room))
+    }
 
     static SpawnUpgrader(spawn: StructureSpawn) {
         let creepBody: CreepBodyDescriptor = CreepBodyDescriptor.Get_Upgrader_Body();
@@ -155,3 +153,4 @@ export class SpawnHelper {
         }
     }
 }
+

@@ -1,5 +1,8 @@
-import * as Enums from "helpers/Enums";
-import { CreepBodyDescriptor } from "helpers/constants";
+import * as Enums from "core/Enums";
+import { HarvestEnergy } from "tasks/HarvestEnergy";
+import { TaskFactory } from "tasks/TaskFactory";
+import { RoomHelper } from "helpers/RoomHelper";
+import { CreepBodyDescriptor } from "core/Contracts";
 
 export class CreepHelper {
 
@@ -14,7 +17,8 @@ export class CreepHelper {
         return {
             role: role,
             room: room.name,
-            status: Enums.JobStatus.Unknown
+            status: Enums.JobStatus.Unknown,
+            task: undefined
         };
     }
 
@@ -22,12 +26,41 @@ export class CreepHelper {
 
         for (const name in Game.creeps) {
             const creep = Game.creeps[name];
-
-            //todo: need to rework this, they all have roles which should define their order of responsibility, but they can all do everything
-            //harvester and worker also need to repair structures
-            
+                        
 
             switch (creep.memory.role) {
+                case Enums.CreepRoles.Drone:
+                    let task = TaskFactory.CreateTaskFromCreepMemory(creep);
+
+                    if (task == undefined) {
+                        task = RoomHelper.FindTask(creep.room, creep);
+                    }
+                    creep.memory.task = task;
+
+                    if (task != undefined) {
+                        let taskResult = task.Execute(creep);
+                        switch (taskResult) {
+                            case Enums.TaskResult.Complete:
+                            case Enums.TaskResult.Invalid:
+                                console.log("taskResult:1 " + taskResult);
+                                creep.memory.task = undefined;
+                                break;
+                            case Enums.TaskResult.Pending:
+                            case Enums.TaskResult.InProgress:
+                                console.log("taskResult:2 " + taskResult);
+                                break;
+                            default:
+                                console.error("Unhandled Task Result: " + taskResult);
+
+                        }
+                    } else {
+
+                        console.log("task is undefinded");
+                    }
+
+                
+                    break;
+
                 case Enums.CreepRoles.Harvester:
                 //harvest
                 //deposit

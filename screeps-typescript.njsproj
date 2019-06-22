@@ -35,19 +35,31 @@
     <Compile Include="rollup.test-unit-config.js" />
     <Content Include="docs\README.md" />
     <Content Include="docs\SUMMARY.md" />
+    <TypeScriptCompile Include="src\core\Contracts.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="src\helpers\constants.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\helpers\CreepHelper.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="src\helpers\Enums.ts">
+    <TypeScriptCompile Include="src\core\Enums.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="src\helpers\RoomHelper.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\helpers\SpawnHelper.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\main.ts" />
+    <TypeScriptCompile Include="src\tasks\HarvestEnergy.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="src\tasks\TaskFactory.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="src\types.d.ts" />
     <Compile Include="test\setup-node.js" />
     <Content Include="docs\getting-started\authenticating.md" />
@@ -84,6 +96,8 @@
     <Folder Include="obj\Debug" />
     <Folder Include="src" />
     <Folder Include="src\helpers\" />
+    <Folder Include="src\core\" />
+    <Folder Include="src\tasks\" />
     <Folder Include="src\utils" />
     <Folder Include="test" />
     <Folder Include="test\integration" />
